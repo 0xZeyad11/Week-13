@@ -24,11 +24,17 @@ UserSchema.pre('save' , async function(){
     if(!this.isModified('password')) return ; 
     try {
         const SALT = process.env.SALT ;
+        if(!SALT)
+            throw new Error("SALT value is undefined")
        const hashedPassword = await bcrypt.hash(this.password, parseInt(SALT)); 
        this.password = hashedPassword;
     } catch (error) {
         next(error);
     }
 })
+
+UserSchema.methods.comparePassword = async function(candidatePassword){
+    return await bcrypt.compare(candidatePassword, this.password);
+}
 
 export const User = mongoose.model('User' , UserSchema);
