@@ -19,4 +19,16 @@ const UserSchema = new mongoose.Schema({
     }
 })
 
+UserSchema.pre('save' , async function(){
+    // make sure that the password is updated in order to hash the new password
+    if(!this.isModified('password')) return ; 
+    try {
+        const SALT = process.env.SALT ;
+       const hashedPassword = await bcrypt.hash(this.password, parseInt(SALT)); 
+       this.password = hashedPassword;
+    } catch (error) {
+        next(error);
+    }
+})
+
 export const User = mongoose.model('User' , UserSchema);
